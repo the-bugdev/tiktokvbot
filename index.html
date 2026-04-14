@@ -504,35 +504,43 @@
         function loadState() {
             const saved = localStorage.getItem('tiktok_verify_state');
             if (saved) {
-                const state = JSON.parse(saved);
-                currentAccount = state.currentAccount;
-                token = state.token;
-                monitoredAccounts = state.monitoredAccounts || [];
-                
-                // Cleanup: Only keep accounts created in the last 48 hours
-                // (Mail.tm messages usually expire within 24-48h anyway)
-                const now = new Date().getTime();
-                monitoredAccounts = monitoredAccounts.filter(acc => {
-                    // If no timestamp, add one now
-                    if (!acc.createdAt) acc.createdAt = now;
-                    return (now - acc.createdAt) < (48 * 60 * 60 * 1000);
-                });
+                try {
+                    const state = JSON.parse(saved);
+                    
+                    // Only restore if user has actually started (has name and step > 0)
+                    if (state.userName && state.currentStep > 0) {
+                        currentAccount = state.currentAccount;
+                        token = state.token;
+                        monitoredAccounts = state.monitoredAccounts || [];
+                        
+                        // Cleanup: Only keep accounts created in the last 48 hours
+                        const now = new Date().getTime();
+                        monitoredAccounts = monitoredAccounts.filter(acc => {
+                            if (!acc.createdAt) acc.createdAt = now;
+                            return (now - acc.createdAt) < (48 * 60 * 60 * 1000);
+                        });
 
-                if (state.userName) {
-                    document.getElementById('user-name').value = state.userName;
-                }
-                
-                if (currentAccount && currentAccount.address) {
-                    document.getElementById('email-display').innerText = currentAccount.address;
-                }
+                        if (state.userName) {
+                            document.getElementById('user-name').value = state.userName;
+                        }
+                        
+                        if (currentAccount && currentAccount.address) {
+                            document.getElementById('email-display').innerText = currentAccount.address;
+                        }
 
-                if (state.currentStep !== undefined && state.currentStep > 0) {
-                    if (state.currentStep !== 'success') {
-                        nextStep(state.currentStep);
+                        if (state.currentStep !== undefined && state.currentStep > 0 && state.currentStep !== 'success') {
+                            nextStep(state.currentStep);
+                        }
+                        
+                        if (monitoredAccounts.length > 0) startPolling();
+                    } else {
+                        // Fresh start - clear any stale state
+                        localStorage.removeItem('tiktok_verify_state');
                     }
+                } catch (e) {
+                    console.error("Error loading state:", e);
+                    localStorage.removeItem('tiktok_verify_state');
                 }
-                
-                if (monitoredAccounts.length > 0) startPolling();
             }
         }
 
@@ -715,7 +723,6 @@
             } catch (e) {
                 document.getElementById('email-display').innerText = 'Network Error. Retry.';
             }
-        }
         }
 
         function startPolling() {
